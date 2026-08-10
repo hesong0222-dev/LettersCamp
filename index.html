@@ -24,21 +24,23 @@
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
     /* 화면 높이(vh)에 맞춰 줄어드는 치수 — 스크롤 대신 카드 자체가 작아져서
-       어떤 화면 높이에서도 6장이 잘리거나 겹치지 않고 한 번에 들어간다.
+       어떤 화면 높이에서도 7장이 잘리거나 겹치지 않고 한 번에 들어간다.
        최대값은 아이패드에서 다듬은 기존 크기라, 화면이 충분히 크면
-       이 전과 동일하게 보인다. */
-    --pad-v: clamp(6px, 1.1vh, 10px);
-    --gap-card: clamp(4px, 0.85vh, 6px);
-    --fs-name: clamp(11px, 1.55vh, 13.5px);
-    --fs-variant: clamp(8px, 1.05vh, 9.5px);
-    --fs-tag: clamp(9px, 1.15vh, 10.5px);
-    --fs-count: clamp(14px, 2.5vh, 20px);
-    --gap-size: clamp(3px, 0.65vh, 6px);
-    --szbtn-min: clamp(30px, 5.2vh, 44px);
-    --fs-sz: clamp(11px, 1.65vh, 13px);
-    --fs-left: clamp(7.5px, 1vh, 9px);
-    --sell-h: clamp(30px, 5vh, 42px);
-    --fs-sell: clamp(11px, 1.55vh, 13.5px);
+       이 전과 동일하게 보인다. 최솟값은 품목이 7개(4줄)로 늘어난 뒤
+       기준으로 다시 낮췄다. */
+    --pad-v: clamp(3px, 0.8vh, 10px);
+    --gap-card: clamp(2px, 0.65vh, 6px);
+    --gap-row: clamp(3px, 0.9vh, 7px);
+    --fs-name: clamp(8.5px, 1.2vh, 13.5px);
+    --fs-variant: clamp(6px, 0.8vh, 9.5px);
+    --fs-tag: clamp(7px, 0.9vh, 10.5px);
+    --fs-count: clamp(10px, 1.9vh, 20px);
+    --gap-size: clamp(2px, 0.5vh, 6px);
+    --szbtn-min: clamp(22px, 4vh, 44px);
+    --fs-sz: clamp(8.5px, 1.25vh, 13px);
+    --fs-left: clamp(5.5px, 0.75vh, 9px);
+    --sell-h: clamp(20px, 3.8vh, 42px);
+    --fs-sell: clamp(8.5px, 1.2vh, 13.5px);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -125,7 +127,7 @@
     grid-template-rows: minmax(0, 1.3fr) minmax(0, 1fr);
   }
   .stock-list {
-    min-height: 0; display: grid; gap: 7px;
+    min-height: 0; display: grid; gap: var(--gap-row);
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-auto-rows: minmax(min-content, 1fr);
     overflow: hidden;
@@ -396,8 +398,9 @@
     { id: 'keyring-letter', name: '레터스 키캡 키링',        variant: '편지봉투',  unit: '개',   cost: 3500, price: 5000,  stock: 48 },
     { id: 'tee-black',      name: '레터스 티셔츠',           variant: '검정',      unit: '장',   cost: 8000, price: 12000, sizes: true },
     { id: 'tee-white',      name: '레터스 티셔츠',           variant: '흰색',      unit: '장',   cost: 8000, price: 12000, sizes: true },
-    { id: 'sticker-single', name: '레터스 카드 커버 스티커', variant: '개당',      unit: '개',   cost: null, price: 1500,  stock: 334 },
-    { id: 'sticker-set',    name: '레터스 카드 커버 스티커', variant: '3종 세트',  unit: '세트', cost: null, price: 3000,  setCap: 109 }
+    { id: 'sticker-black',  name: '레터스 카드 커버 스티커', variant: '블랙',      unit: '개',   cost: null, price: 1500,  stock: 113 },
+    { id: 'sticker-white',  name: '레터스 카드 커버 스티커', variant: '화이트',    unit: '개',   cost: null, price: 1500,  stock: 109 },
+    { id: 'sticker-beige',  name: '레터스 카드 커버 스티커', variant: '베이지',    unit: '개',   cost: null, price: 1500,  stock: 112 }
   ];
 
   var KEY = 'letters-goods-v2';
@@ -407,7 +410,7 @@
   /* ---------- 상태 ---------- */
 
   function initialState() {
-    var s = { stock: {}, setCap: 109, prices: {}, log: [] };
+    var s = { stock: {}, prices: {}, log: [] };
     ITEMS.forEach(function (it) {
       if (it.sizes) s.stock[it.id] = Object.assign({}, SIZE_STOCK);
       else if (it.stock !== undefined) s.stock[it.id] = it.stock;
@@ -447,7 +450,6 @@
         if (typeof sp.cost === 'number' && sp.cost >= 0) fresh.prices[it.id].cost = sp.cost;
       }
     });
-    if (typeof src.setCap === 'number' && src.setCap >= 0) fresh.setCap = src.setCap;
 
     if (Array.isArray(src.log)) {
       fresh.log = src.log.map(function (e) {
@@ -482,13 +484,10 @@
     lastSavedAt = new Date();
   }
 
-  /* ---------- 재고 계산 ----------
-     3종 세트는 따로 세지 않고 낱개에서 끌어온다. 세트 하나에 낱개 3개.
-     남은 세트 = min(세트 한도, 낱개 / 3) 이라 판매·취소가 서로 정확한 역연산이 된다. */
+  /* ---------- 재고 계산 ---------- */
 
   function available(id, size) {
     if (byId[id].sizes) return state.stock[id][size] || 0;
-    if (id === 'sticker-set') return Math.min(state.setCap, Math.floor(state.stock['sticker-single'] / 3));
     return state.stock[id];
   }
 
@@ -500,9 +499,6 @@
   function applySale(id, size, dir) {
     if (byId[id].sizes) {
       state.stock[id][size] -= dir;
-    } else if (id === 'sticker-set') {
-      state.setCap -= dir;
-      state.stock['sticker-single'] -= 3 * dir;
     } else {
       state.stock[id] -= dir;
     }
@@ -605,10 +601,7 @@
     refreshLedger();
     save();
 
-    // 세트는 낱개에서 나오므로 총계에서 빼야 두 번 세지 않는다.
-    var sum = ITEMS.reduce(function (a, it) {
-      return it.id === 'sticker-set' ? a : a + totalOf(it.id);
-    }, 0);
+    var sum = ITEMS.reduce(function (a, it) { return a + totalOf(it.id); }, 0);
     var savedTxt = lastSaveError
       ? '<span class="save-warn">저장 안 됨</span>'
       : '저장 ' + pad2(lastSavedAt.getHours()) + ':' + pad2(lastSavedAt.getMinutes());
