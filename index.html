@@ -23,24 +23,20 @@
     --sans: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
-    /* 화면 높이(vh)에 맞춰 줄어드는 치수 — 스크롤 대신 카드 자체가 작아져서
-       어떤 화면 높이에서도 7장이 잘리거나 겹치지 않고 한 번에 들어간다.
-       최대값은 아이패드에서 다듬은 기존 크기라, 화면이 충분히 크면
-       이 전과 동일하게 보인다. 최솟값은 품목이 7개(4줄)로 늘어난 뒤
-       기준으로 다시 낮췄다. */
-    --pad-v: clamp(3px, 0.8vh, 10px);
-    --gap-card: clamp(2px, 0.65vh, 6px);
-    --gap-row: clamp(3px, 0.9vh, 7px);
-    --fs-name: clamp(8.5px, 1.2vh, 13.5px);
-    --fs-variant: clamp(6px, 0.8vh, 9.5px);
-    --fs-tag: clamp(7px, 0.9vh, 10.5px);
-    --fs-count: clamp(10px, 1.9vh, 20px);
-    --gap-size: clamp(2px, 0.5vh, 6px);
-    --szbtn-min: clamp(22px, 4vh, 44px);
-    --fs-sz: clamp(8.5px, 1.25vh, 13px);
-    --fs-left: clamp(5.5px, 0.75vh, 9px);
-    --sell-h: clamp(20px, 3.8vh, 42px);
-    --fs-sell: clamp(8.5px, 1.2vh, 13.5px);
+    /* 품목 카드 치수 — 화면에 안 들어가면 그냥 스크롤한다. */
+    --pad-v: 10px;
+    --gap-card: 6px;
+    --gap-row: 10px;
+    --fs-name: 13.5px;
+    --fs-variant: 9.5px;
+    --fs-tag: 10.5px;
+    --fs-count: 20px;
+    --gap-size: 6px;
+    --szbtn-min: 44px;
+    --fs-sz: 13px;
+    --fs-left: 9px;
+    --sell-h: 42px;
+    --fs-sell: 13.5px;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -61,29 +57,21 @@
 
   * { box-sizing: border-box; }
 
-  html, body { height: 100%; }
-
   body {
     margin: 0;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
+    min-height: 100vh;
+    min-height: 100dvh;
     background: var(--paper);
     color: var(--ink);
     font-family: var(--sans);
     line-height: 1.35;
-    display: flex;
-    flex-direction: column;
     -webkit-text-size-adjust: 100%;
-    /* 노치·다이내믹 아일랜드·하단 홈 인디케이터 영역을 100dvh 안에서
-       미리 빼둔다 — 이렇게 해야 그 아래 내용이 그 영역 밑에 깔려
-       잘리지 않고, 화면 전체를 스크롤 없이 정확히 채운다는 전제도 깨지지 않는다. */
+    /* 노치·다이내믹 아일랜드·하단 홈 인디케이터 밑에 내용이 깔리지 않게. */
     padding: env(safe-area-inset-top) env(safe-area-inset-right)
              env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   .band {
-    flex: 0 0 auto;
     height: 6px;
     background: repeating-linear-gradient(45deg,
         var(--ink) 0 8px, var(--paper) 8px 16px,
@@ -91,10 +79,8 @@
   }
 
   .wrap {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-width: 1600px; width: 100%; margin: 0 auto; padding: 8px 10px;
-    display: flex; flex-direction: column; gap: 6px;
+    max-width: 1600px; width: 100%; margin: 0 auto; padding: 12px 10px 24px;
+    display: flex; flex-direction: column; gap: 12px;
   }
 
   /* ---------- 머리말 ---------- */
@@ -116,44 +102,28 @@
   .miniBtn:active { transform: translateY(1px); }
 
   /* ---------- 판 ----------
-     화면 전체를 정확히 채운다. 세로(폭<높이)는 재고를 위에, 기록·가격을
-     그 아래 가로로 나눠 놓고, 가로(폭>=높이)는 재고와 사이드를 좌우로 놓는다.
-     내용이 자리보다 많아지는 경우(판매 기록이 쌓일 때)에만 그 패널
-     내부에서 스크롤하고, 화면 자체는 스크롤되지 않는다. */
-  .board {
-    flex: 1 1 auto; min-height: 0;
-    display: grid; gap: 8px;
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1.3fr) minmax(0, 1fr);
-  }
+     넓은 화면(가로)에서는 재고와 사이드를 좌우로, 좁은 화면(세로)에서는
+     위아래로 쌓는다. 자리에 안 들어가면 페이지가 그냥 스크롤된다. */
+  .board { display: grid; gap: 12px; grid-template-columns: 1fr; }
   .stock-list {
-    min-height: 0; display: grid; gap: var(--gap-row);
+    display: grid; gap: var(--gap-row);
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: minmax(min-content, 1fr);
-    overflow: hidden;
   }
-  /* 기록·가격 패널은 기본은 위아래로 쌓는다 — 옆으로 나란히 놓으면
-     폰 폭에서 가격표 칸이 좁아져 글자가 세로로 밀린다.
-     가로로 나눠도 표가 읽히는 폭(세로 화면이면서 700px 이상)에서만 좌우로 놓는다. */
-  .side { min-height: 0; display: flex; flex-direction: column; gap: 8px; }
-  .side > .panel { flex: 1 1 0; min-width: 0; min-height: 0; }
+  .side { display: flex; flex-direction: column; gap: 12px; }
 
-  @media (orientation: landscape) {
-    .board {
-      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-      grid-template-rows: minmax(0, 1fr);
-    }
+  @media (min-width: 860px) {
+    .board { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); align-items: start; }
   }
-  @media (orientation: portrait) and (min-width: 700px) {
+  @media (min-width: 640px) and (max-width: 859px) {
     .side { flex-direction: row; }
+    .side > .panel { flex: 1 1 0; min-width: 0; }
   }
 
   /* ---------- 품목 카드 ---------- */
   .item {
-    height: 100%;
     background: var(--card); border: 1px solid var(--line); border-radius: 11px;
     padding: var(--pad-v) 11px calc(var(--pad-v) + 1px);
-    display: flex; flex-direction: column; justify-content: space-between; gap: var(--gap-card);
+    display: flex; flex-direction: column; gap: var(--gap-card);
     box-shadow: var(--shadow);
   }
   .item.out { opacity: .55; }
@@ -203,13 +173,10 @@
 
   /* ---------- 공용 패널 ---------- */
   .panel {
-    height: 100%; min-height: 0;
     background: var(--card); border: 1px solid var(--line); border-radius: 11px;
     box-shadow: var(--shadow);
-    display: flex; flex-direction: column;
   }
   .panel-head {
-    flex: 0 0 auto;
     display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
     padding: 9px 13px 7px; border-bottom: 1px solid var(--line-soft);
   }
@@ -218,7 +185,7 @@
   .panel-head .meta b { color: var(--ink); font-weight: 600; }
   .saved { font-family: var(--mono); font-size: 10px; color: var(--muted); opacity: 0; transition: opacity .2s ease; }
   .saved.on { opacity: 1; }
-  .panel-foot { flex: 0 0 auto; padding: 7px 13px 9px; display: flex; justify-content: flex-end; }
+  .panel-foot { padding: 7px 13px 9px; display: flex; justify-content: flex-end; }
 
   .linkbtn {
     background: none; border: 0; padding: 3px 2px; cursor: pointer;
@@ -228,11 +195,9 @@
   .linkbtn.quiet { color: var(--muted); }
 
   /* ---------- 판매 기록 ----------
-     목록은 스크롤하지 않는다 — 자리에 들어가는 만큼만 최근 순으로 보여주고,
-     넘치는 나머지는 안내 줄 하나로 알린다(합계·되돌리기는 총 건수 기준이라
-     화면에 안 보이는 오래된 기록도 값에는 그대로 반영된다). */
-  .log-body { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
-  .log { list-style: none; margin: 0; padding: 0; flex: 0 1 auto; overflow: hidden; }
+     쌓일수록 이 목록 안에서 스크롤된다 — 페이지 전체가 한없이 길어지지
+     않게. 합계·매출은 항상 전체 기록 기준이라 정확하다. */
+  .log { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow-y: auto; }
   .log li {
     display: flex; align-items: center; gap: 8px;
     padding: 6px 13px; border-bottom: 1px solid var(--line-soft);
@@ -248,14 +213,9 @@
   }
   .log .undo:hover { border-color: var(--accent); color: var(--accent); }
   .empty { padding: 14px 13px; font-size: 11.5px; color: var(--muted); margin: 0; }
-  .log-more {
-    flex: none; margin: 0; padding: 5px 13px; font-size: 9.5px; color: var(--muted);
-    border-top: 1px dashed var(--line-soft);
-  }
-  .log-more[hidden] { display: none; }
 
   /* ---------- 가격 조정 ---------- */
-  .scroller { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+  .scroller { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; }
   th, td { padding: 6px 5px; text-align: right; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
   th { font-family: var(--mono); font-size: 9px; letter-spacing: .08em; color: var(--muted); font-weight: 500; }
@@ -339,11 +299,8 @@
           <h2 id="logTitle">판매 기록</h2>
           <span class="meta" id="logMeta"></span>
         </div>
-        <div class="log-body" id="logBody">
-          <ul class="log" id="log"></ul>
-          <p class="empty" id="logEmpty">아직 판매 기록이 없습니다.</p>
-          <p class="log-more" id="logMore" hidden></p>
-        </div>
+        <ul class="log" id="log"></ul>
+        <p class="empty" id="logEmpty">아직 판매 기록이 없습니다.</p>
         <div class="panel-foot">
           <button type="button" class="linkbtn quiet" id="clearLog">기록 비우기</button>
         </div>
@@ -665,10 +622,8 @@
 
   /* ---------- 판매 기록 ---------- */
 
-  var logBody = document.getElementById('logBody');
   var logEl = document.getElementById('log');
   var logEmpty = document.getElementById('logEmpty');
-  var logMore = document.getElementById('logMore');
   var logMeta = document.getElementById('logMeta');
 
   function hhmm(iso) {
@@ -704,48 +659,7 @@
     logMeta.innerHTML = state.log.length
       ? '<b>' + state.log.length + '</b>건 · 매출 <b>' + won(revenue) + '</b>'
       : '';
-
-    fitLog();
   }
-
-  // 기록은 스크롤하지 않는다 — 자리에 들어가는 만큼만 최근 순으로 보여주고,
-  // 넘치는 나머지는 안내 줄로 알린다. 위쪽 건수·매출·재고 계산은 화면에
-  // 안 보이는 기록도 포함해 항상 정확하다.
-  function fitLog() {
-    var rows = Array.prototype.slice.call(logEl.children);
-    if (!rows.length) { logMore.hidden = true; return; }
-
-    // .log는 .log-body의 맨 위에 여백 없이 붙어 있으니 그 높이가 곧 가용 공간이다.
-    // offsetTop은 가장 가까운 position 조상(대개 <body>) 기준이라 여기 쓰면 안 된다.
-    var avail = logBody.clientHeight;
-    rows.forEach(function (li) { li.style.display = ''; });
-
-    var used = 0, shown = 0;
-    for (var i = 0; i < rows.length; i++) {
-      used += rows[i].offsetHeight;
-      if (used > avail) break;
-      shown = i + 1;
-    }
-
-    if (shown >= rows.length) { logMore.hidden = true; return; }
-
-    logMore.hidden = false;
-    var budget = avail - logMore.offsetHeight;
-    used = 0; shown = 0;
-    for (var j = 0; j < rows.length; j++) {
-      used += rows[j].offsetHeight;
-      if (used > budget) break;
-      shown = j + 1;
-    }
-    rows.forEach(function (li, idx) { li.style.display = idx < shown ? '' : 'none'; });
-    logMore.textContent = '이전 ' + (rows.length - shown) + '건은 기록에 포함되어 있지만 화면에는 표시되지 않습니다';
-  }
-
-  var fitLogResizeTimer = null;
-  window.addEventListener('resize', function () {
-    clearTimeout(fitLogResizeTimer);
-    fitLogResizeTimer = setTimeout(fitLog, 120);
-  });
 
   function undoSale(key) {
     var i = state.log.findIndex(function (e) { return e.key === key; });
