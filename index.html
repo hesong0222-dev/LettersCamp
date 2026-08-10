@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="레터스 굿즈 부스 재고 관리 — 종류별 판매 버튼, 판매 기록, 가격 조정">
 <meta name="theme-color" content="#16223A">
 <title>레터스 굿즈 재고</title>
@@ -73,6 +73,11 @@
     display: flex;
     flex-direction: column;
     -webkit-text-size-adjust: 100%;
+    /* 노치·다이내믹 아일랜드·하단 홈 인디케이터 영역을 100dvh 안에서
+       미리 빼둔다 — 이렇게 해야 그 아래 내용이 그 영역 밑에 깔려
+       잘리지 않고, 화면 전체를 스크롤 없이 정확히 채운다는 전제도 깨지지 않는다. */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+             env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   .band {
