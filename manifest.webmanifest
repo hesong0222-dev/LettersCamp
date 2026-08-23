@@ -1,0 +1,20 @@
+{
+  "name": "Letters Camp Control",
+  "short_name": "Camp Control",
+  "description": "캠프의 일정, 사람, 자료, 물품, 참가자를 세션 단위로 연결하는 운영 컨트롤 타워",
+  "lang": "ko-KR",
+  "start_url": "./#dashboard",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f5f7fa",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
